@@ -8,7 +8,13 @@ import time
 import zipfile
 
 ROOT = Path(__file__).resolve().parent
-CONFIG = json.loads((ROOT / 'release.json').read_text())
+# The wide branch builds the same pipeline from widened sources into its own
+# output folder; the defaults keep the upstream build byte-identical.
+CONFIG = json.loads(Path(os.environ.get('ALLO_RELEASE', ROOT / 'release.json')).read_text())
+SOURCES = Path(os.environ.get('ALLO_SOURCES', ROOT / 'sources'))
+FONTS = Path(os.environ.get('ALLO_FONTS', ROOT / 'fonts'))
+UPRIGHT_ONLY = os.environ.get('ALLO_UPRIGHT_ONLY') == '1'
+FILE_PREFIX = CONFIG.get('filePrefix', 'Allo')
 os.environ.setdefault('SOURCE_DATE_EPOCH', str(CONFIG['sourceDateEpoch']))
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.pens.boundsPen import BoundsPen
@@ -22,7 +28,7 @@ def save(font, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     font.save(path)
     font.flavor = 'woff2'
-    web = ROOT / 'fonts/webfonts' / (path.stem + '.woff2')
+    web = FONTS / 'webfonts' / (path.stem + '.woff2')
     web.parent.mkdir(parents=True, exist_ok=True)
     font.save(web)
     return [path, web]
@@ -34,13 +40,17 @@ def friendly_web(variable):
     for the full font. Web only (fonts/webfonts/AlloVariableFriendly.woff2)."""
     from fontTools.varLib.instancer import instantiateVariableFont
     font = instantiateVariableFont(variable, {'ROND': 50})
+    family = CONFIG.get('family', 'Allo')
+    compact = family.replace(' ', '')
     for record in font['name'].names:
         text = record.toUnicode()
-        new = text.replace('AlloVariable', 'AlloVariableFriendly').replace('Allo Variable', 'Allo Variable Friendly')
+        new = (text.replace(f'{family} Variable', f'{family} Variable Friendly')
+                   .replace(f'{compact}Variable', f'{compact}VariableFriendly'))
         if new != text:
             record.string = new
     font.flavor = 'woff2'
-    web = ROOT / 'fonts/webfonts/AlloVariableFriendly.woff2'
+    web = FONTS / 'webfonts' / f'{FILE_PREFIX}VariableFriendly.woff2'
+    web.parent.mkdir(parents=True, exist_ok=True)
     font.save(web)
     return web
 
@@ -167,6 +177,8 @@ def hint_otfs(pairs):
     values = hint_values({name: TTFont(upright) for name, (upright, _) in pairs.items()})
     for name, paths in pairs.items():
         for path in paths:
+            if path is None:  # the wide family has no obliques
+                continue
             tt = TTFont(path)
             private = tt["CFF "].cff.topDictIndex[0].Private
             for key, value in values[name].items():
@@ -336,11 +348,11 @@ ZIP_README = '''
 
 
 def main():
-    ds = DesignSpaceDocument.fromfile(ROOT / 'sources/Allo.designspace')
+    ds = DesignSpaceDocument.fromfile(SOURCES / 'Allo.designspace')
     ds.loadSourceFonts(ufoLib2.Font.open)
     for instance in ds.instances:  # (their own names: else varLib names them from the STAT labels, "Display" for Display Regular)
         instance.localisedStyleName = {'en': instance.styleName, **instance.localisedStyleName}
-    statics = {path.stem: ufoLib2.Font.open(path) for path in sorted((ROOT / 'sources/static').glob('*.ufo'))}
+    statics = {path.stem: ufoLib2.Font.open(path) for path in sorted((SOURCES / 'static').glob('*.ufo'))}
     default = ds.findDefault().font.info
     win = (default.openTypeOS2WinAscent, default.openTypeOS2WinDescent)
     assert all((f.info.openTypeOS2WinAscent, f.info.openTypeOS2WinDescent) == win for f in [s.font for s in ds.sources] + list(statics.values())), 'Windows metrics differ between sources'
@@ -350,28 +362,37 @@ def main():
         exact_small(variable, CONFIG['smallShift'])
     drop_unreachable(variable)
     smooth_unhinted(variable)
-    files = save(variable, ROOT / 'fonts/variable/AlloVariable.ttf')
+    files = save(variable, FONTS / 'variable' / f'{FILE_PREFIX}Variable.ttf')
     files.append(friendly_web(variable))
     otfs = {}
     for stem, ufo in statics.items():
-        otfs[stem] = ROOT / 'fonts/otf' / (stem + '.otf')
+        out = stem.replace('Allo', FILE_PREFIX, 1)
+        otfs[stem] = FONTS / 'otf' / (out + '.otf')
         otfs[stem].parent.mkdir(parents=True, exist_ok=True)
         otf = compileOTF(ufo, removeOverlaps=False, useProductionNames=False)
         drop_unreachable(otf)
         otf.save(otfs[stem])
-    hint_otfs({w: (otfs[f'Allo-{w}'], otfs['Allo-' + ('' if w == 'Regular' else w) + 'Oblique']) for w in WEIGHT_NAMES})  # (all nine: until 2026-11-14 only the first three statics were hinted)
+    pairs = {}
+    for weight in WEIGHT_NAMES:
+        upright = otfs[f'Allo-{weight}']
+        oblique = otfs.get('Allo-' + ('' if weight == 'Regular' else weight) + 'Oblique')
+        pairs[weight] = (upright, None if UPRIGHT_ONLY else oblique)
+    hint_otfs(pairs)  # (all nine: until 2026-11-14 only the first three statics were hinted)
     for path in otfs.values():
         files += save(TTFont(path), path)  # (and its woff2)
     hashes = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
-    (ROOT / 'fonts/SHA256SUMS').write_text(''.join(f'{digest}  {name}\n' for name, digest in sorted(hashes.items())))
-    files += [ROOT / 'fonts/SHA256SUMS', ROOT / 'OFL.txt']
-    archive = ROOT / f"Allo-{CONFIG['version']}.zip"
+    (FONTS / 'SHA256SUMS').write_text(''.join(f'{digest}  {name}\n' for name, digest in sorted(hashes.items())))
+    files += [FONTS / 'SHA256SUMS', ROOT / 'OFL.txt']
+    archive = ROOT / f"{FILE_PREFIX}-{CONFIG['version']}.zip"
     date = time.gmtime(int(os.environ['SOURCE_DATE_EPOCH']))[:6]
     entries = {str(path.relative_to(ROOT)): path.read_bytes() for path in files if path.name != 'SHA256SUMS'}  # (checksums stay in the repo; GitHub shows each release file's own: Josh, 2026-11-14)
-    entries['README.txt'] = ZIP_README.replace('{version}', CONFIG['version']).encode()
+    readme = ZIP_README.replace('{version}', CONFIG['version'])
+    if os.environ.get('ALLO_ZIP_README'):
+        readme = Path(os.environ['ALLO_ZIP_README']).read_text(encoding='utf-8')
+    entries['README.txt'] = readme.encode()
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
         for name, data in sorted(entries.items()):
-            info = zipfile.ZipInfo('Allo-' + CONFIG['version'] + '/' + name, date)
+            info = zipfile.ZipInfo(f'{FILE_PREFIX}-' + CONFIG['version'] + '/' + name, date)
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o644 << 16
             z.writestr(info, data)

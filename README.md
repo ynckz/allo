@@ -1,5 +1,12 @@
 # Allo
 
+> **This fork ships Allo Wide.** Branch `wide` of this repository is a downstream
+> variant of Allo with the Cyrillic branch (PR #8) merged, **stretched 25%
+> horizontally**: same sizes, same line heights, wider words, no obliques.
+> Everything below is the original upstream README and still describes the
+> drawing; see [`tools/wide/README.md`](tools/wide/README.md) for what this fork
+> changed and how to build it. Upstream: [joshpuckett/allo](https://github.com/joshpuckett/allo).
+
 Allo is your friendly neighborhood typeface. It’s variable in weight and roundness, with proportions and curves
 designed to feel warm without being too cute and clear without being too cold. It’s a perfect companion out of the
 box, and three variable axes and plenty of alternates let you tune its personality to exactly what you need.

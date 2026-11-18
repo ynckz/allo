@@ -1,7 +1,7 @@
 {
-  "name": "allo-font",
+  "name": "allo-wide-font",
   "version": "1.0.0",
-  "description": "Allo, your friendly neighborhood typeface: variable web fonts and CSS.",
+  "description": "Allo Wide: Allo, the friendly neighborhood typeface, stretched 25% horizontally. Variable web fonts and CSS.",
   "keywords": [
     "font",
     "typeface",
@@ -10,28 +10,19 @@
     "sans-serif",
     "allo"
   ],
-  "homepage": "https://allo.joshpuckett.me",
+  "homepage": "https://github.com/ynckz/allo",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joshpuckett/allo.git"
+    "url": "git+https://github.com/ynckz/allo.git"
   },
-  "bugs": "https://github.com/joshpuckett/allo/issues",
+  "bugs": "https://github.com/ynckz/allo/issues",
   "license": "OFL-1.1",
-  "author": "Josh Puckett (https://joshpuckett.me)",
+  "author": "Josh Puckett (https://joshpuckett.me); Cyrillic by Degroshi; wide cut by ynckz",
   "files": [
     "allo.css",
     "allo-friendly.css",
-    "fonts/webfonts/AlloVariable.woff2",
-    "fonts/webfonts/AlloVariableFriendly.woff2",
-    "fonts/webfonts/Allo-ThinOblique.woff2",
-    "fonts/webfonts/Allo-ExtraLightOblique.woff2",
-    "fonts/webfonts/Allo-LightOblique.woff2",
-    "fonts/webfonts/Allo-Oblique.woff2",
-    "fonts/webfonts/Allo-MediumOblique.woff2",
-    "fonts/webfonts/Allo-SemiBoldOblique.woff2",
-    "fonts/webfonts/Allo-BoldOblique.woff2",
-    "fonts/webfonts/Allo-ExtraBoldOblique.woff2",
-    "fonts/webfonts/Allo-BlackOblique.woff2",
+    "fonts/webfonts/AlloWideVariable.woff2",
+    "fonts/webfonts/AlloWideVariableFriendly.woff2",
     "OFL.txt"
   ],
   "style": "allo.css",

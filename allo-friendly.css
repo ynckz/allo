@@ -1,81 +1,9 @@
-/* Allo 1.0: the variable font with roundness fixed at 50 (about half the size) and the nine obliques. SIL Open Font License 1.1. https://allo.joshpuckett.me */
+/* Allo Wide 1.0: the variable font with roundness fixed at 50 (about half the size) — upright only. SIL Open Font License 1.1. https://github.com/ynckz/allo */
 
 @font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/AlloVariableFriendly.woff2") format("woff2");
+  font-family: "Allo Wide";
+  src: url("./fonts/webfonts/AlloWideVariableFriendly.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-ThinOblique.woff2") format("woff2");
-  font-weight: 100;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-ExtraLightOblique.woff2") format("woff2");
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-LightOblique.woff2") format("woff2");
-  font-weight: 300;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-Oblique.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-MediumOblique.woff2") format("woff2");
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-SemiBoldOblique.woff2") format("woff2");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-BoldOblique.woff2") format("woff2");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-ExtraBoldOblique.woff2") format("woff2");
-  font-weight: 800;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Allo";
-  src: url("./fonts/webfonts/Allo-BlackOblique.woff2") format("woff2");
-  font-weight: 900;
-  font-style: italic;
   font-display: swap;
 }
